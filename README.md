@@ -1,14 +1,11 @@
 <div align="center">
 
 # 🏙️ City Compare
-
-对比不同城市的生活成本
+本项目基于Zipland City Compare项目，对比不同城市的生活成本，新增澳大利亚-悉尼，并使用AUD结算，各项中位数我参考了我的花销注入到database中。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Next.js](https://img.shields.io/badge/Next.js-13.5-black)](https://nextjs.org/) [![TailwindCSS](https://img.shields.io/badge/Tailwind-3.3-38b2ac)](https://tailwindcss.com/) [![Deploy: Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black)](https://citycompare.zippland.com/)
 
 **在不同城市，相同生活水平需要多少薪资？Offer 选择 & 城市生活成本对比工具**
-
-[🔗 在线体验](https://citycompare.zippland.com/) | [📊 添加城市数据](#添加新城市数据) | [🤝 参与贡献](#参与贡献)
 
 </div>
 
@@ -36,9 +33,6 @@
 
 ## 🚀 快速开始
 
-### 在线使用
-
-访问 [https://citycompare.zippland.com/](https://citycompare.zippland.com/) 即可使用最新版本。
 
 ### 本地运行
 
@@ -157,18 +151,7 @@ npm run dev
 
 ## <a id="参与贡献"></a>🤝 参与贡献
 
-欢迎通过以下方式参与项目：
-
-- **提交问题**: 发现 Bug 或有功能建议，请创建 [Issue](https://github.com/Zippland/city_compare/issues)
-- **贡献代码**: 提交 PR 改进现有功能或修复问题
-- **分享项目**: 将项目分享给可能需要的朋友
-- **提供反馈**: 使用后的建议和想法都是宝贵的意见
 
 ## 📄 开源协议
 
 本项目采用 [MIT 许可证](LICENSE)。
-
-## 📬 联系方式
-
-- Email: zylanjian@outlook.com
-- GitHub: [@Zippland](https://github.com/Zippland)
