@@ -43,7 +43,13 @@ export default function Home() {
       try {
         setIsLoading(true);
         const response = await fetch('/city_data.csv');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch city_data.csv: ${response.status}`);
+        }
         const csvText = await response.text();
+        if (!csvText.trim().startsWith('city,')) {
+          throw new Error('Invalid city_data.csv format');
+        }
         
         const loader = new CityDataLoader();
         await loader.loadData(csvText);
@@ -80,8 +86,8 @@ export default function Home() {
       const cityData = cityDataLoader?.getCityData(settings.sourceCity);
       
       if (cityData) {
-        const income = costCalculator.calculateMonthlyIncome(settings.salary, cityData, settings);
-        const costs = costCalculator.calculateMonthlyCosts(cityData, settings);
+        const income = costCalculator.calculateMonthlyIncome(settings.sourceCity, settings.salary, cityData, settings);
+        const costs = costCalculator.calculateMonthlyCosts(settings.sourceCity, cityData, settings);
         
         setSourceIncome(income);
         setSourceCosts(costs);
@@ -128,8 +134,8 @@ export default function Home() {
       };
 
       // 计算基于这些设置的月收入和支出
-      const income = costCalculator.calculateMonthlyIncome(targetSalary, cityData, tempSettings);
-      const costs = costCalculator.calculateMonthlyCosts(cityData, tempSettings);
+      const income = costCalculator.calculateMonthlyIncome(targetCity, targetSalary, cityData, tempSettings);
+      const costs = costCalculator.calculateMonthlyCosts(targetCity, cityData, tempSettings);
       
       return { income, costs };
     } catch (err) {
