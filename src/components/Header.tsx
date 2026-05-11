@@ -1,5 +1,4 @@
 import React from 'react';
-import Image from 'next/image';
 
 const Header: React.FC = () => {
   return (
@@ -14,10 +13,9 @@ const Header: React.FC = () => {
           </div>
         </h1>
         
-        {/* 联系方式 - 同一行 */}
         <div className="flex justify-center items-center mt-4 text-xs text-gray-600 dark:text-gray-400">
           <a 
-            href="https://github.com/Zippland/city_compare" 
+            href="https://github.com/mengmygithub/city_compare_worldwide" 
             target="_blank" 
             rel="noopener noreferrer" 
             className="flex items-center hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
@@ -30,51 +28,6 @@ const Header: React.FC = () => {
             </svg>
             GitHub
           </a>
-          
-          <div className="mx-2 dark:text-gray-500">|</div>
-          
-          <a 
-            href="mailto:zylanjian@outlook.com" 
-            className="flex items-center hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-          >
-            <svg className="w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path 
-                d="M3 8L10.89 13.26C11.2187 13.4793 11.6049 13.5963 12 13.5963C12.3951 13.5963 12.7813 13.4793 13.11 13.26L21 8M5 19H19C19.5304 19 20.0391 18.7893 20.4142 18.4142C20.7893 18.0391 21 17.5304 21 17V7C21 6.46957 20.7893 5.96086 20.4142 5.58579C20.0391 5.21071 19.5304 5 19 5H5C4.46957 5 3.96086 5.21071 3.58579 5.58579C3.21071 5.96086 3 6.46957 3 7V17C3 17.5304 3.21071 18.0391 3.58579 18.4142C3.96086 18.7893 4.46957 19 5 19Z" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              />
-            </svg>
-            Email
-          </a>
-          
-          <div className="mx-2 dark:text-gray-500">|</div>
-          
-          <a 
-            href="https://www.xiaohongshu.com/user/profile/623e8b080000000010007721?xsec_token=YBdeHZTp_aVwi1Ijmras5CgSgVn-T1HN3-18kywqqmPZE%3D&xsec_source=app_share&xhsshare=CopyLink&appuid=623e8b080000000010007721&apptime=1742055526&share_id=5dde53ca3ec1478a8b408ed5b2310ed7&share_channel=copy_link" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="flex items-center hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-          >
-            <svg className="w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19.2 6.6l-3.3-1.6V3.8c0-.7-.6-1.3-1.3-1.3H9.3C8.6 2.5 8 3.1 8 3.8V5l-3.3 1.6c-.5.3-.8.8-.8 1.4v5c0 .6.3 1.1.8 1.4l3.3 1.6v1.2c0 .7.6 1.3 1.3 1.3h5.3c.7 0 1.3-.6 1.3-1.3v-1.2l3.3-1.6c.5-.3.8-.8.8-1.4V8c0-.6-.3-1.1-.8-1.4zM12 13.5c-1.7 0-3-1.3-3-3s1.3-3 3-3 3 1.3 3 3-1.3 3-3 3z"></path>
-            </svg>
-            小红书
-          </a>
-        </div>
-        
-        {/* 访问计数 - 下一行 */}
-        <div className="flex justify-center items-center mt-2 text-sm text-gray-600 dark:text-gray-400">
-          <div className="visit-counter">
-            <Image 
-              src="https://hits.sh/citycompare.zippland.com.svg?label=visitors&extraCount=402601&color=9f9f9f&labelColor=007ec6" 
-              alt="访问计数" 
-              width={100}
-              height={20}
-              unoptimized
-            />
-          </div>
         </div>
       </div>
     </header>
