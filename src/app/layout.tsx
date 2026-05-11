@@ -28,22 +28,24 @@ export default function RootLayout({
     <html lang="zh-CN" className="dark:bg-gray-900">
       <head>
         <script dangerouslySetInnerHTML={{ __html: `
-          // 检测系统暗色模式并应用
           (function() {
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-              document.documentElement.classList.add('dark');
-            } else {
-              document.documentElement.classList.remove('dark');
-            }
-            
-            // 监听系统主题变化
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-              if (e.matches) {
-                document.documentElement.classList.add('dark');
-              } else {
-                document.documentElement.classList.remove('dark');
+            try {
+              if (!window.matchMedia) return;
+              var mql = window.matchMedia('(prefers-color-scheme: dark)');
+              var apply = function(e) {
+                if (e && e.matches) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              };
+              apply(mql);
+              if (typeof mql.addEventListener === 'function') {
+                mql.addEventListener('change', apply);
+              } else if (typeof mql.addListener === 'function') {
+                mql.addListener(apply);
               }
-            });
+            } catch (e) {}
           })();
         ` }} />
         <link rel="manifest" href="/manifest.json" />
