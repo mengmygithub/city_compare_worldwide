@@ -1,6 +1,15 @@
 // 费用计算器
 import CityDataLoader, { CityData } from './CityDataLoader';
 
+export type Currency = 'CNY' | 'AUD';
+
+export const AUD_TO_CNY = 4.8;
+
+export const getCityCurrency = (cityName: string): Currency => {
+  if (cityName === '悉尼') return 'AUD';
+  return 'CNY';
+};
+
 export interface Settings {
   sourceCity: string;
   salary: number;
@@ -42,13 +51,47 @@ class CostCalculator {
     this.cityDataLoader = cityDataLoader;
   }
 
+  private convertCityDataToCNY(cityName: string, cityData: CityData): CityData {
+    const factor = getCityCurrency(cityName) === 'AUD' ? AUD_TO_CNY : 1;
+    if (factor === 1) return cityData;
+
+    return {
+      social_security_base_min: cityData.social_security_base_min * factor,
+      social_security_base_max: cityData.social_security_base_max * factor,
+      dining_home: cityData.dining_home * factor,
+      dining_out: cityData.dining_out * factor,
+      transport_public: cityData.transport_public * factor,
+      transport_car: cityData.transport_car * factor,
+      rent_center_1b: cityData.rent_center_1b * factor,
+      rent_center_3b: cityData.rent_center_3b * factor,
+      rent_suburb_1b: cityData.rent_suburb_1b * factor,
+      rent_suburb_3b: cityData.rent_suburb_3b * factor,
+      house_price_center: cityData.house_price_center * factor,
+      house_price_suburb: cityData.house_price_suburb * factor,
+      kindergarten: cityData.kindergarten * factor,
+      primary: cityData.primary * factor,
+      middle: cityData.middle * factor,
+      high: cityData.high * factor,
+      international: cityData.international * factor,
+      meal_cheap: cityData.meal_cheap * factor,
+      meal_mid: cityData.meal_mid * factor,
+      utilities: cityData.utilities * factor,
+      mobile_plan: cityData.mobile_plan * factor,
+      internet: cityData.internet * factor,
+      fitness: cityData.fitness * factor,
+      cinema: cityData.cinema * factor
+    };
+  }
+
   // 计算月度总支出
-  calculateMonthlyCosts(cityData: CityData, settings: Settings): MonthlyCosts {
-    const housing = this.calculateHousingCost(cityData, settings);
-    const dining = this.calculateDiningCost(cityData, settings);
-    const transport = this.calculateTransportCost(cityData, settings);
-    const education = this.calculateEducationCost(cityData, settings);
-    const utilities = this.calculateUtilitiesCost(cityData, settings);
+  calculateMonthlyCosts(cityName: string, cityData: CityData, settings: Settings): MonthlyCosts {
+    const cityDataCNY = this.convertCityDataToCNY(cityName, cityData);
+
+    const housing = this.calculateHousingCost(cityDataCNY, settings);
+    const dining = this.calculateDiningCost(cityDataCNY, settings);
+    const transport = this.calculateTransportCost(cityDataCNY, settings);
+    const education = this.calculateEducationCost(cityDataCNY, settings);
+    const utilities = this.calculateUtilitiesCost(cityDataCNY, settings);
 
     return {
       住房: Math.round(housing),
@@ -61,11 +104,12 @@ class CostCalculator {
   }
 
   // 计算月收入情况
-  calculateMonthlyIncome(salary: number, cityData: CityData, settings: Settings): MonthlyIncome {
+  calculateMonthlyIncome(cityName: string, salary: number, cityData: CityData, settings: Settings): MonthlyIncome {
+    const cityDataCNY = this.convertCityDataToCNY(cityName, cityData);
     const monthSalary = salary / 12;
     const insuranceBase = Math.min(
-      Math.max(monthSalary, cityData.social_security_base_min),
-      cityData.social_security_base_max
+      Math.max(monthSalary, cityDataCNY.social_security_base_min),
+      cityDataCNY.social_security_base_max
     );
 
     const insurance = {
@@ -294,12 +338,12 @@ class CostCalculator {
     }
 
     // 1. 计算源城市的每月结余
-    const sourceIncome = this.calculateMonthlyIncome(sourceSalary, sourceCityData, settings);
-    const sourceCosts = this.calculateMonthlyCosts(sourceCityData, settings);
+    const sourceIncome = this.calculateMonthlyIncome(sourceCityName, sourceSalary, sourceCityData, settings);
+    const sourceCosts = this.calculateMonthlyCosts(sourceCityName, sourceCityData, settings);
     const targetSavingsGoal = sourceIncome.税后工资 - sourceCosts.总支出;
 
     // 2. 计算目标城市的总支出
-    const targetCosts = this.calculateMonthlyCosts(targetCityData, settings);
+    const targetCosts = this.calculateMonthlyCosts(targetCityName, targetCityData, settings);
     
     // 3. 计算目标城市需要的税后月工资
     const targetAfterTaxMonthly = targetCosts.总支出 + targetSavingsGoal;
@@ -311,7 +355,7 @@ class CostCalculator {
     let step = 10000; // 初始步长
     
     for (let i = 0; i < 100; i++) { // 限制迭代次数，避免无限循环
-      const monthlyIncome = this.calculateMonthlyIncome(targetAnnualSalary, targetCityData, settings);
+      const monthlyIncome = this.calculateMonthlyIncome(targetCityName, targetAnnualSalary, targetCityData, settings);
       const diff = monthlyIncome.税后工资 - targetAfterTaxMonthly;
       
       // 如果差异小于100元，认为足够接近了

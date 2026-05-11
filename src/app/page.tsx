@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Header from '../components/Header';
 import MainInputs from '../components/MainInputs';
 import LifestyleSettings from '../components/LifestyleSettings';
@@ -15,6 +15,7 @@ export default function Home() {
   const [availableCities, setAvailableCities] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const lastNonSydneyHousingFundRate = useRef<string>('0.08');
 
   const [settings, setSettings] = useState<Settings>({
     sourceCity: '',
@@ -36,6 +37,25 @@ export default function Home() {
 
   const [sourceIncome, setSourceIncome] = useState<MonthlyIncome | null>(null);
   const [sourceCosts, setSourceCosts] = useState<MonthlyCosts | null>(null);
+
+  useEffect(() => {
+    if (settings.sourceCity === '悉尼') {
+      if (settings.housingFundRate !== '0') {
+        lastNonSydneyHousingFundRate.current = settings.housingFundRate;
+        setSettings(prev => ({
+          ...prev,
+          housingFundRate: '0'
+        }));
+      }
+      return;
+    }
+    if (settings.housingFundRate === '0') {
+      setSettings(prev => ({
+        ...prev,
+        housingFundRate: lastNonSydneyHousingFundRate.current || '0.08'
+      }));
+    }
+  }, [settings.sourceCity]);
 
   // 加载城市数据
   useEffect(() => {
@@ -80,8 +100,8 @@ export default function Home() {
       const cityData = cityDataLoader?.getCityData(settings.sourceCity);
       
       if (cityData) {
-        const income = costCalculator.calculateMonthlyIncome(settings.salary, cityData, settings);
-        const costs = costCalculator.calculateMonthlyCosts(cityData, settings);
+        const income = costCalculator.calculateMonthlyIncome(settings.sourceCity, settings.salary, cityData, settings);
+        const costs = costCalculator.calculateMonthlyCosts(settings.sourceCity, cityData, settings);
         
         setSourceIncome(income);
         setSourceCosts(costs);
@@ -128,8 +148,8 @@ export default function Home() {
       };
 
       // 计算基于这些设置的月收入和支出
-      const income = costCalculator.calculateMonthlyIncome(targetSalary, cityData, tempSettings);
-      const costs = costCalculator.calculateMonthlyCosts(cityData, tempSettings);
+      const income = costCalculator.calculateMonthlyIncome(targetCity, targetSalary, cityData, tempSettings);
+      const costs = costCalculator.calculateMonthlyCosts(targetCity, cityData, tempSettings);
       
       return { income, costs };
     } catch (err) {

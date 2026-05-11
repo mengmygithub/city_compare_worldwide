@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MonthlyIncome, MonthlyCosts } from '../utils/CostCalculator';
+import { AUD_TO_CNY, getCityCurrency, MonthlyIncome, MonthlyCosts } from '../utils/CostCalculator';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartData } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 
@@ -36,8 +36,10 @@ const IncomeExpenseDetails: React.FC<IncomeExpenseDetailsProps> = ({ cityName, i
     };
   }, []);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY' }).format(value);
+  const formatCurrency = (valueCNY: number) => {
+    const currency = getCityCurrency(cityName);
+    const displayValue = currency === 'AUD' ? valueCNY / AUD_TO_CNY : valueCNY;
+    return new Intl.NumberFormat('zh-CN', { style: 'currency', currency }).format(displayValue);
   };
 
   // 颜色定义 - 移除未使用的渐变色变量

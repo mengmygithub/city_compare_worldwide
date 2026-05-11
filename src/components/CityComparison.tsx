@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Settings, MonthlyIncome, MonthlyCosts } from '../utils/CostCalculator';
+import { AUD_TO_CNY, getCityCurrency, Settings, MonthlyIncome, MonthlyCosts } from '../utils/CostCalculator';
 import IncomeExpenseDetails from './IncomeExpenseDetails';
 
 interface CityComparisonProps {
@@ -73,8 +73,10 @@ const CityComparison: React.FC<CityComparisonProps> = ({
     return Math.max(...results.map(r => r.salaryRatio));
   }, [results]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY', maximumFractionDigits: 0 }).format(value);
+  const formatCurrency = (cityName: string, valueCNY: number) => {
+    const currency = getCityCurrency(cityName);
+    const displayValue = currency === 'AUD' ? valueCNY / AUD_TO_CNY : valueCNY;
+    return new Intl.NumberFormat('zh-CN', { style: 'currency', currency, maximumFractionDigits: 0 }).format(displayValue);
   };
 
   const toggleCityDetails = (cityName: string) => {
@@ -204,7 +206,7 @@ const CityComparison: React.FC<CityComparisonProps> = ({
                     {result.cityName}
                   </td>
                   <td className="px-2 md:px-4 py-3 text-xs md:text-sm text-gray-500 dark:text-gray-400">
-                    {formatCurrency(result.requiredSalary)}
+                    {formatCurrency(result.cityName, result.requiredSalary)}
                   </td>
                   <td className="px-2 md:px-4 py-3 text-xs md:text-sm text-gray-500 dark:text-gray-400">
                     <div className="flex items-center">
