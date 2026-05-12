@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AUD_TO_CNY, getCityCurrency, MonthlyIncome, MonthlyCosts } from '../utils/CostCalculator';
+import { getCityCurrency, MonthlyIncome, MonthlyCosts } from '../utils/CostCalculator';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartData } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 
@@ -9,13 +9,14 @@ interface IncomeExpenseDetailsProps {
   cityName: string;
   income: MonthlyIncome;
   costs: MonthlyCosts;
+  exchangeRateAudToCny: number;
   hideTitle?: boolean;
 }
 
 // 标签类型
 type TabType = 'income' | 'expense' | 'savings';
 
-const IncomeExpenseDetails: React.FC<IncomeExpenseDetailsProps> = ({ cityName, income, costs, hideTitle = false }) => {
+const IncomeExpenseDetails: React.FC<IncomeExpenseDetailsProps> = ({ cityName, income, costs, exchangeRateAudToCny, hideTitle = false }) => {
   const [isMobile, setIsMobile] = useState(false);
   // 添加激活标签状态
   const [activeTab, setActiveTab] = useState<TabType>('income');
@@ -38,7 +39,7 @@ const IncomeExpenseDetails: React.FC<IncomeExpenseDetailsProps> = ({ cityName, i
 
   const formatCurrency = (valueCNY: number) => {
     const currency = getCityCurrency(cityName);
-    const displayValue = currency === 'AUD' ? valueCNY / AUD_TO_CNY : valueCNY;
+    const displayValue = currency === 'AUD' ? valueCNY / exchangeRateAudToCny : valueCNY;
     return new Intl.NumberFormat('zh-CN', { style: 'currency', currency }).format(displayValue);
   };
 

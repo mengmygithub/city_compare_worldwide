@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { AUD_TO_CNY, Settings } from '../utils/CostCalculator';
+import { Settings } from '../utils/CostCalculator';
 
 interface MainInputsProps {
   settings: Settings;
   availableCities: string[];
   onSettingChange: (key: keyof Settings, value: unknown) => void;
+  onRefreshExchangeRate: () => Promise<void>;
+  isLoadingRate: boolean;
 }
 
-const MainInputs: React.FC<MainInputsProps> = ({ settings, availableCities, onSettingChange }) => {
-  const isSydney = settings.sourceCity === '悉尼';
-  const displaySalary = isSydney ? Math.round(settings.salary / AUD_TO_CNY) : settings.salary;
+const MainInputs: React.FC<MainInputsProps> = ({ settings, availableCities, onSettingChange, onRefreshExchangeRate, isLoadingRate }) => {
+  const isSydney = settings.sourceCity === '澳大利亚-悉尼';
+  const displaySalary = isSydney ? Math.round(settings.salary / settings.exchangeRateAudToCny) : settings.salary;
 
   const [salaryInput, setSalaryInput] = useState(displaySalary.toString());
   const [housingFundInput, setHousingFundInput] = useState((parseFloat(settings.housingFundRate) * 100).toString());
@@ -35,7 +37,7 @@ const MainInputs: React.FC<MainInputsProps> = ({ settings, availableCities, onSe
     // 只有当输入不为空时，才将其转换为数字并更新全局状态
     if (value !== '') {
       const parsed = Number(value);
-      const salaryCNY = isSydney ? Math.round(parsed * AUD_TO_CNY) : parsed;
+      const salaryCNY = isSydney ? Math.round(parsed * settings.exchangeRateAudToCny) : parsed;
       onSettingChange('salary', salaryCNY);
     } else {
       // 当输入为空时，保持输入框为空，但设置salary为0
@@ -86,6 +88,21 @@ const MainInputs: React.FC<MainInputsProps> = ({ settings, availableCities, onSe
           value={salaryInput} 
           onChange={handleSalaryChange}
         />
+        {isSydney && (
+          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2">
+            <span>
+              使用汇率：1 AUD = {settings.exchangeRateAudToCny.toFixed(4)} CNY{settings.exchangeRateUpdatedAt ? `（${settings.exchangeRateUpdatedAt}）` : ''}
+            </span>
+            <button
+              type="button"
+              onClick={onRefreshExchangeRate}
+              className="text-blue-600 dark:text-blue-400 hover:underline disabled:opacity-60"
+              disabled={isLoadingRate}
+            >
+              {isLoadingRate ? '更新中…' : '更新'}
+            </button>
+          </div>
+        )}
       </div>
 
       {!isSydney && (

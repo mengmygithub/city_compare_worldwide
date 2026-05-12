@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Header from '../components/Header';
 import MainInputs from '../components/MainInputs';
 import LifestyleSettings from '../components/LifestyleSettings';
 import IncomeExpenseDetails from '../components/IncomeExpenseDetails';
 import CityComparison from '../components/CityComparison';
 import CityDataLoader from '../utils/CityDataLoader';
-import CostCalculator, { Settings, MonthlyIncome, MonthlyCosts } from '../utils/CostCalculator';
+import CostCalculator, { DEFAULT_AUD_TO_CNY, Settings, MonthlyIncome, MonthlyCosts } from '../utils/CostCalculator';
 
 export default function Home() {
   const [cityDataLoader, setCityDataLoader] = useState<CityDataLoader | null>(null);
@@ -15,6 +15,8 @@ export default function Home() {
   const [availableCities, setAvailableCities] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const lastNonSydneyHousingFundRate = useRef<string>('0.08');
+  const [isLoadingRate, setIsLoadingRate] = useState(false);
 
   const [settings, setSettings] = useState<Settings>({
     sourceCity: '',
@@ -31,11 +33,53 @@ export default function Home() {
     educationTypes: [],
     entertainmentLevel: 'medium',
     loanInterestRate: 0.0588, // 默认5.88%年利率
-    loanTerm: 30 // 默认30年贷款期限
+    loanTerm: 30, // 默认30年贷款期限
+    exchangeRateAudToCny: DEFAULT_AUD_TO_CNY,
+    exchangeRateUpdatedAt: null
   });
 
   const [sourceIncome, setSourceIncome] = useState<MonthlyIncome | null>(null);
   const [sourceCosts, setSourceCosts] = useState<MonthlyCosts | null>(null);
+
+  const refreshExchangeRate = async () => {
+    try {
+      setIsLoadingRate(true);
+      const res = await fetch('/api/fx?from=AUD&to=CNY');
+      const data = await res.json();
+      if (res.ok && data && typeof data.rate === 'number' && data.rate > 0) {
+        setSettings(prev => ({
+          ...prev,
+          exchangeRateAudToCny: data.rate,
+          exchangeRateUpdatedAt: typeof data.date === 'string' ? data.date : null
+        }));
+      }
+    } finally {
+      setIsLoadingRate(false);
+    }
+  };
+
+  useEffect(() => {
+    refreshExchangeRate();
+  }, []);
+
+  useEffect(() => {
+    if (settings.sourceCity === '澳大利亚-悉尼') {
+      if (settings.housingFundRate !== '0') {
+        lastNonSydneyHousingFundRate.current = settings.housingFundRate;
+        setSettings(prev => ({
+          ...prev,
+          housingFundRate: '0'
+        }));
+      }
+      return;
+    }
+    if (settings.housingFundRate === '0') {
+      setSettings(prev => ({
+        ...prev,
+        housingFundRate: lastNonSydneyHousingFundRate.current || '0.08'
+      }));
+    }
+  }, [settings.sourceCity]);
 
   // 加载城市数据
   useEffect(() => {
@@ -57,15 +101,19 @@ export default function Home() {
         const calculator = new CostCalculator(loader);
         
         const cities = loader.getAvailableCities();
+        const sortedCities = cities.filter(c => c !== '澳大利亚-悉尼');
+        if (cities.includes('澳大利亚-悉尼')) {
+          sortedCities.push('澳大利亚-悉尼');
+        }
         
         setCityDataLoader(loader);
         setCostCalculator(calculator);
-        setAvailableCities(cities);
+        setAvailableCities(sortedCities);
         
-        if (cities.length > 0) {
+        if (sortedCities.length > 0) {
           setSettings(prev => ({
             ...prev,
-            sourceCity: cities[0]
+            sourceCity: sortedCities[0]
           }));
         }
         
@@ -180,6 +228,8 @@ export default function Home() {
           settings={settings} 
           availableCities={availableCities} 
           onSettingChange={handleSettingChange} 
+          onRefreshExchangeRate={refreshExchangeRate}
+          isLoadingRate={isLoadingRate}
         />
         
         <LifestyleSettings 
@@ -192,6 +242,7 @@ export default function Home() {
             cityName={settings.sourceCity} 
             income={sourceIncome} 
             costs={sourceCosts} 
+            exchangeRateAudToCny={settings.exchangeRateAudToCny}
           />
         )}
         

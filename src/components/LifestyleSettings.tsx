@@ -14,6 +14,7 @@ const LifestyleSettings: React.FC<LifestyleSettingsProps> = ({ settings, onSetti
   const [activeTab, setActiveTab] = useState<TabType>('housing');
   // 添加移动设备检测
   const [isMobile, setIsMobile] = useState(false);
+  const [template, setTemplate] = useState<string>('custom');
   
   // 检测设备类型
   useEffect(() => {
@@ -60,6 +61,68 @@ const LifestyleSettings: React.FC<LifestyleSettingsProps> = ({ settings, onSetti
       onSettingChange('educationTypes', []);
     }
   }, [settings.childrenCount, settings.educationTypes, onSettingChange]);
+
+  const applyTemplate = (value: string) => {
+    setTemplate(value);
+    if (value === 'custom') return;
+
+    const updates: Partial<Settings> =
+      value === 'single'
+        ? {
+            housingType: 'rent',
+            housingLocation: 'suburb',
+            housingSize: 'small',
+            companyMeals: false,
+            diningHomeRatio: 70,
+            transportType: 'public',
+            carLoanMonthlyPayment: 0,
+            childrenCount: 0,
+            educationTypes: [],
+            entertainmentLevel: 'medium'
+          }
+        : value === 'couple'
+          ? {
+              housingType: 'rent',
+              housingLocation: 'suburb',
+              housingSize: 'large',
+              companyMeals: false,
+              diningHomeRatio: 60,
+              transportType: 'public',
+              carLoanMonthlyPayment: 0,
+              childrenCount: 0,
+              educationTypes: [],
+              entertainmentLevel: 'medium'
+            }
+          : value === 'family3_kindergarten'
+            ? {
+                housingType: 'rent',
+                housingLocation: 'suburb',
+                housingSize: 'large',
+                companyMeals: false,
+                diningHomeRatio: 75,
+                transportType: 'car',
+                carLoanMonthlyPayment: 0,
+                childrenCount: 1,
+                educationTypes: ['kindergarten'],
+                entertainmentLevel: 'low'
+              }
+            : {
+                housingType: 'rent',
+                housingLocation: 'suburb',
+                housingSize: 'large',
+                companyMeals: false,
+                diningHomeRatio: 75,
+                transportType: 'car',
+                carLoanMonthlyPayment: 0,
+                childrenCount: 1,
+                educationTypes: ['primary'],
+                entertainmentLevel: 'low'
+              };
+
+    (Object.keys(updates) as (keyof Settings)[]).forEach((key) => {
+      onSettingChange(key, updates[key]);
+    });
+  };
 
   // 住房设置标签内容
   const renderHousingTab = () => (
@@ -323,7 +386,27 @@ const LifestyleSettings: React.FC<LifestyleSettingsProps> = ({ settings, onSetti
 
   return (
     <div className="lifestyle-settings p-3 md:p-5 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-      <h3 className="text-base md:text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3 md:mb-5 pb-2 border-b border-gray-100 dark:border-gray-700">生活方式设置</h3>
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-2 md:gap-4 mb-3 md:mb-5 pb-2 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex flex-col">
+          <label htmlFor="lifestyleTemplate" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">生活方式模板</label>
+          <select
+            id="lifestyleTemplate"
+            className="border border-gray-300 dark:border-gray-600 rounded-md py-1 md:py-2 px-2 md:px-3 text-xs md:text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            value={template}
+            onChange={(e) => applyTemplate(e.target.value)}
+          >
+            <option value="custom">自定义</option>
+            <option value="single">单身</option>
+            <option value="couple">情侣/两人</option>
+            <option value="family3_kindergarten">三口之家（幼儿园）</option>
+            <option value="family3_primary">三口之家（小学）</option>
+          </select>
+        </div>
+        <div className="text-xs text-gray-500 dark:text-gray-400 md:text-right">
+          选择模板会覆盖部分参数，仍可在下方继续微调
+        </div>
+      </div>
+      <h3 className="text-base md:text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3 md:mb-5">生活方式设置</h3>
       
       {isMobile ? (
         // 移动端显示标签栏

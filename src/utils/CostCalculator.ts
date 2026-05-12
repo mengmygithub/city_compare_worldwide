@@ -3,10 +3,10 @@ import CityDataLoader, { CityData } from './CityDataLoader';
 
 export type Currency = 'CNY' | 'AUD';
 
-export const AUD_TO_CNY = 4.8;
+export const DEFAULT_AUD_TO_CNY = 4.8;
 
 export const getCityCurrency = (cityName: string): Currency => {
-  if (cityName === '悉尼') return 'AUD';
+  if (cityName === '澳大利亚-悉尼') return 'AUD';
   return 'CNY';
 };
 
@@ -26,6 +26,8 @@ export interface Settings {
   entertainmentLevel: string;
   loanInterestRate: number; // 贷款年利率，默认5.88%
   loanTerm: number; // 贷款期限（年），默认30年
+  exchangeRateAudToCny: number;
+  exchangeRateUpdatedAt: string | null;
 }
 
 export interface MonthlyIncome {
@@ -51,8 +53,13 @@ class CostCalculator {
     this.cityDataLoader = cityDataLoader;
   }
 
-  private convertCityDataToCNY(cityName: string, cityData: CityData): CityData {
-    const factor = getCityCurrency(cityName) === 'AUD' ? AUD_TO_CNY : 1;
+  private getAudToCnyRate(settings: Settings): number {
+    const rate = settings.exchangeRateAudToCny;
+    return Number.isFinite(rate) && rate > 0 ? rate : DEFAULT_AUD_TO_CNY;
+  }
+
+  private convertCityDataToCNY(cityName: string, cityData: CityData, settings: Settings): CityData {
+    const factor = getCityCurrency(cityName) === 'AUD' ? this.getAudToCnyRate(settings) : 1;
     if (factor === 1) return cityData;
 
     return {
@@ -85,7 +92,7 @@ class CostCalculator {
 
   // 计算月度总支出
   calculateMonthlyCosts(cityName: string, cityData: CityData, settings: Settings): MonthlyCosts {
-    const cityDataCNY = this.convertCityDataToCNY(cityName, cityData);
+    const cityDataCNY = this.convertCityDataToCNY(cityName, cityData, settings);
 
     const housing = this.calculateHousingCost(cityDataCNY, settings);
     const dining = this.calculateDiningCost(cityDataCNY, settings);
@@ -105,7 +112,7 @@ class CostCalculator {
 
   // 计算月收入情况
   calculateMonthlyIncome(cityName: string, salary: number, cityData: CityData, settings: Settings): MonthlyIncome {
-    const cityDataCNY = this.convertCityDataToCNY(cityName, cityData);
+    const cityDataCNY = this.convertCityDataToCNY(cityName, cityData, settings);
     const monthSalary = salary / 12;
     const insuranceBase = Math.min(
       Math.max(monthSalary, cityDataCNY.social_security_base_min),
@@ -340,13 +347,13 @@ class CostCalculator {
     // 1. 计算源城市的每月结余
     const sourceIncome = this.calculateMonthlyIncome(sourceCityName, sourceSalary, sourceCityData, settings);
     const sourceCosts = this.calculateMonthlyCosts(sourceCityName, sourceCityData, settings);
-    const targetSavingsGoal = sourceIncome.税后工资 - sourceCosts.总支出;
+    const sourceMonthlySavings = sourceIncome.税后工资 - sourceCosts.总支出;
 
     // 2. 计算目标城市的总支出
     const targetCosts = this.calculateMonthlyCosts(targetCityName, targetCityData, settings);
     
     // 3. 计算目标城市需要的税后月工资
-    const targetAfterTaxMonthly = targetCosts.总支出 + targetSavingsGoal;
+    const targetAfterTaxMonthly = targetCosts.总支出 + sourceMonthlySavings;
     
     // 4. 反推需要的税前年工资
     // 从一个初始工资开始，每次增加或减少1000元进行逼近

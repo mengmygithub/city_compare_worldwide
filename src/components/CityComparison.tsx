@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { AUD_TO_CNY, getCityCurrency, Settings, MonthlyIncome, MonthlyCosts } from '../utils/CostCalculator';
+import { getCityCurrency, Settings, MonthlyIncome, MonthlyCosts } from '../utils/CostCalculator';
 import IncomeExpenseDetails from './IncomeExpenseDetails';
 
 interface CityComparisonProps {
@@ -75,7 +75,7 @@ const CityComparison: React.FC<CityComparisonProps> = ({
 
   const formatCurrency = (cityName: string, valueCNY: number) => {
     const currency = getCityCurrency(cityName);
-    const displayValue = currency === 'AUD' ? valueCNY / AUD_TO_CNY : valueCNY;
+    const displayValue = currency === 'AUD' ? valueCNY / settings.exchangeRateAudToCny : valueCNY;
     return new Intl.NumberFormat('zh-CN', { style: 'currency', currency, maximumFractionDigits: 0 }).format(displayValue);
   };
 
@@ -234,6 +234,7 @@ const CityComparison: React.FC<CityComparisonProps> = ({
                           cityName={result.cityName}
                           income={expandedCityDetails.income}
                           costs={expandedCityDetails.costs}
+                          exchangeRateAudToCny={settings.exchangeRateAudToCny}
                           hideTitle={true}
                         />
                       </div>
